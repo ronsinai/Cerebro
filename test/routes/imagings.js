@@ -1,11 +1,11 @@
 const Axios = require('axios');
 const Chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const Nconf = require('nconf');
 
 Chai.use(chaiAsPromised);
 const { expect } = Chai;
 
-const Diagnoses = require('../../server/diagnoses');
 const exampleImaging = require('../data/imaging');
 
 describe('Imagings Routes', () => {
@@ -16,7 +16,7 @@ describe('Imagings Routes', () => {
 
   describe('POST /imagings/{id}/diagnoses', () => {
     it('should post imaging to diagnose', async () => {
-      const exampleDiagnoses = Diagnoses[this.exampleImaging.type];
+      const exampleDiagnoses = Nconf.get('diagnoses')[this.exampleImaging.type];
       const result = await Axios.post(`/imagings/${this.exampleImaging._id}/diagnoses`, this.exampleImaging);
       const diagnoses = result.data;
       expect(diagnoses).to.be.an('array');

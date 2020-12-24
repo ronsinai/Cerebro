@@ -3,7 +3,6 @@ const Express = require('express');
 require('express-async-errors');
 const Nconf = require('nconf');
 
-const Diagnoses = require('./diagnoses');
 const { getLogger } = require('./utils/logger');
 const MQ = require('./utils/mq');
 const Routes = require('./routes');
@@ -54,7 +53,7 @@ class App {
   // eslint-disable-next-line class-methods-use-this
   async _connectToMQ() {
     await MQ.connect(Nconf.get('AMQP_URI'));
-    const queues = [].concat(...Object.values(Diagnoses));
+    const queues = [].concat(...Object.values(Nconf.get('diagnoses')));
     await MQ.assertQueues(queues);
     logger.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }

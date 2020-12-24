@@ -7,7 +7,7 @@ Nconf.argv().env().defaults({
   NODE_ENV: 'dev',
   LOG_LEVEL: 'info',
   AMQP_URI: 'amqp://localhost:5672',
-});
+}).file({ file: './config.json' });
 
 const App = require('./server');
 

@@ -1,6 +1,6 @@
 const Joi = require('joi');
+const Nconf = require('nconf');
 
-const Diagnoses = require('../diagnoses');
 const { getLogger } = require('../utils/logger');
 const { imagingSchema } = require('../schemas');
 const MQOperations = require('../utils/mq/operations');
@@ -16,7 +16,7 @@ class ImagingsCollection {
   async diagnose(imaging) {
     try {
       Joi.assert(imaging, imagingSchema);
-      const imagingDiagnoses = Diagnoses[imaging.type];
+      const imagingDiagnoses = Nconf.get('diagnoses')[imaging.type];
       logger.info(`Publishing imaging ${imaging._id} to queues: ['${imagingDiagnoses.join("', '")}']`);
 
       await Promise.all(

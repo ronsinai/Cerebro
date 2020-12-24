@@ -1,5 +1,6 @@
 const Chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const Nconf = require('nconf');
 const Sinon = require('sinon');
 const SinonChai = require('sinon-chai');
 
@@ -7,7 +8,6 @@ Chai.use(chaiAsPromised);
 Chai.use(SinonChai);
 const { expect } = Chai;
 
-const Diagnoses = require('../../server/diagnoses');
 const exampleImaging = require('../data/imaging');
 const { getMQ } = require('../../server/utils/mq');
 const { ImagingsCollection } = require('../../server/collections');
@@ -23,7 +23,7 @@ describe('Imagings Collection', () => {
 
   describe('#diagnose', () => {
     it('should pass imaging insertion to diagnose', async () => {
-      const exampleDiagnoses = Diagnoses[this.exampleImaging.type];
+      const exampleDiagnoses = Nconf.get('diagnoses')[this.exampleImaging.type];
       const spy = Sinon.spy(this.mq, 'sendToQueue');
 
       const diagnoses = await this.imagings.diagnose(this.exampleImaging);
