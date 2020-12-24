@@ -5,16 +5,17 @@ Nconf.use('memory');
 Nconf.argv().env().defaults({
   PORT: 2004,
   NODE_ENV: 'test',
+  AMQP_URI: 'amqp://localhost:5672',
 });
 
 const Cerebro = require('../server');
 
-before(() => {
+before(async () => {
   this.cerebroInstance = new Cerebro();
-  this.cerebroInstance.start();
+  await this.cerebroInstance.start();
   Axios.defaults.baseURL = `http://localhost:${Nconf.get('PORT')}`;
 });
 
-after(() => {
-  this.cerebroInstance.stop();
+after(async () => {
+  await this.cerebroInstance.stop();
 });

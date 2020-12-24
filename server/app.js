@@ -3,9 +3,13 @@ const Express = require('express');
 require('express-async-errors');
 const Nconf = require('nconf');
 
+const Diagnoses = require('./diagnoses');
+const MQ = require('./utils/mq');
+
 class App {
-  start() {
+  async start() {
     try {
+      await this._connectToMQ();
       this._initApp();
     }
     catch (err) {
@@ -41,8 +45,29 @@ class App {
     this.appInstance.close();
   }
 
-  stop() {
-    this._stopApp();
+  // eslint-disable-next-line class-methods-use-this
+  async _connectToMQ() {
+    await MQ.connect(Nconf.get('AMQP_URI'));
+    const queues = [].concat(...Object.values(Diagnoses));
+    await MQ.assertQueues(queues);
+    console.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async _closeMQConnection() {
+    await MQ.close();
+    console.info(`Cerebro : disconnected from rabbitmq at ${Nconf.get('AMQP_URI')}`);
+  }
+
+  async stop() {
+    try {
+      this._stopApp();
+      await this._closeMQConnection();
+    }
+    catch (err) {
+      console.error(err);
+      throw err;
+    }
     console.info('Cerebro : server shutting down');
   }
 }
