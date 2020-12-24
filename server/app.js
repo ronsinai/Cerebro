@@ -5,6 +5,7 @@ const Nconf = require('nconf');
 
 const Diagnoses = require('./diagnoses');
 const MQ = require('./utils/mq');
+const Routes = require('./routes');
 
 class App {
   async start() {
@@ -29,6 +30,8 @@ class App {
         response: 'App and Running!',
       });
     });
+
+    this.app.use(Routes());
 
     this.app.use((err, req, res, next) => {
       const status = Object.getPrototypeOf(err).status || 500;

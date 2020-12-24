@@ -25,14 +25,19 @@
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
+    "express-joi-validation": "^5.0.0",
+    "joi": "^17.3.0",
     "nconf": "^0.11.1"
   },
   "devDependencies": {
     "axios": "^0.21.1",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "eslint": "^7.18.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "mocha": "^8.2.1"
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.4",
+    "sinon-chai": "^3.5.0"
   }
 }
