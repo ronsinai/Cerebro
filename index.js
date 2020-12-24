@@ -5,6 +5,7 @@ Nconf.use('memory');
 Nconf.argv().env().defaults({
   PORT: 2004,
   NODE_ENV: 'dev',
+  LOG_LEVEL: 'info',
   AMQP_URI: 'amqp://localhost:5672',
 });
 

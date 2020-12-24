@@ -4,8 +4,11 @@ require('express-async-errors');
 const Nconf = require('nconf');
 
 const Diagnoses = require('./diagnoses');
+const { getLogger } = require('./utils/logger');
 const MQ = require('./utils/mq');
 const Routes = require('./routes');
+
+const logger = getLogger();
 
 class App {
   async start() {
@@ -14,7 +17,7 @@ class App {
       this._initApp();
     }
     catch (err) {
-      console.error(err);
+      logger.error(err);
       throw err;
     }
   }
@@ -40,7 +43,7 @@ class App {
 
     this.appInstance = this.app.listen(Nconf.get('PORT'), (err) => {
       if (err) throw err;
-      console.info(`Cerebro : server running on ${Nconf.get('PORT')}`);
+      logger.info(`Cerebro : server running on ${Nconf.get('PORT')}`);
     });
   }
 
@@ -53,13 +56,13 @@ class App {
     await MQ.connect(Nconf.get('AMQP_URI'));
     const queues = [].concat(...Object.values(Diagnoses));
     await MQ.assertQueues(queues);
-    console.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
+    logger.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }
 
   // eslint-disable-next-line class-methods-use-this
   async _closeMQConnection() {
     await MQ.close();
-    console.info(`Cerebro : disconnected from rabbitmq at ${Nconf.get('AMQP_URI')}`);
+    logger.info(`Cerebro : disconnected from rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }
 
   async stop() {
@@ -68,10 +71,10 @@ class App {
       await this._closeMQConnection();
     }
     catch (err) {
-      console.error(err);
+      logger.error(err);
       throw err;
     }
-    console.info('Cerebro : server shutting down');
+    logger.info('Cerebro : server shutting down');
   }
 }
 
