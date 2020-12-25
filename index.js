@@ -7,6 +7,8 @@ Nconf.argv().env().defaults({
   NODE_ENV: 'dev',
   LOG_LEVEL: 'info',
   AMQP_URI: 'amqp://localhost:5672',
+  REDIS_URI: 'redis://localhost:6379',
+  REDIS_INDEX: 0,
 }).file({ file: './config.json' });
 
 const App = require('./server');

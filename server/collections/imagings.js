@@ -1,9 +1,9 @@
 const Joi = require('joi');
-const Nconf = require('nconf');
 
 const { getLogger } = require('../utils/logger');
 const { imagingSchema } = require('../schemas');
 const MQOperations = require('../utils/mq/operations');
+const RedisOperations = require('../utils/redis/operations');
 
 const logger = getLogger();
 
@@ -11,12 +11,13 @@ class ImagingsCollection {
   // eslint-disable-next-line space-infix-ops
   constructor(collection = 'imagings') {
     this.mq = new MQOperations();
+    this.redis = new RedisOperations();
   }
 
   async diagnose(imaging) {
     try {
       Joi.assert(imaging, imagingSchema);
-      const imagingDiagnoses = Nconf.get('diagnoses')[imaging.type];
+      const imagingDiagnoses = await this.redis.getMembers(imaging.type);
       logger.info(`Publishing imaging ${imaging._id} to queues: ['${imagingDiagnoses.join("', '")}']`);
 
       await Promise.all(

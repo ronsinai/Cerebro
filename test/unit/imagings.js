@@ -1,6 +1,5 @@
 const Chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const Nconf = require('nconf');
 const Sinon = require('sinon');
 const SinonChai = require('sinon-chai');
 
@@ -23,7 +22,7 @@ describe('Imagings Collection', () => {
 
   describe('#diagnose', () => {
     it('should pass imaging insertion to diagnose', async () => {
-      const exampleDiagnoses = Nconf.get('diagnoses')[this.exampleImaging.type];
+      const exampleDiagnoses = await this.imagings.redis.getMembers(this.exampleImaging.type);
       const spy = Sinon.spy(this.mq, 'sendToQueue');
 
       const diagnoses = await this.imagings.diagnose(this.exampleImaging);
@@ -42,6 +41,17 @@ describe('Imagings Collection', () => {
 
     it('should fail partial imaging', async () => {
       await expect(this.imagings.diagnose(this.badImaging)).to.be.rejectedWith('"type" is required');
+    });
+
+    it('should update diagnoses in diagnosis', async () => {
+      const update = 'example_diagnosis';
+      this.imagings.redis.setMembers(this.exampleImaging.type, update);
+
+      const exampleDiagnoses = await this.imagings.redis.getMembers(this.exampleImaging.type);
+      const diagnoses = await this.imagings.diagnose(this.exampleImaging);
+      expect(diagnoses).to.be.an('array');
+      expect(diagnoses).to.eql(exampleDiagnoses);
+      expect(diagnoses).to.contain(update);
     });
   });
 });
