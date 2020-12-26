@@ -1,8 +1,14 @@
 {
   "diagnoses": {
-    "X-RAYS": ["fracture", "infection", "pneumonia"],
-    "MRI": ["multiple_sclerosis", "syringomyelia", "stroke", "tumor"],
-    "CT": ["fracture", "tumor"],
-    "US": ["gallbladder_disease", "prostate_problem", "synovitis"]
+    "fracture": ["X-RAYS.#", "US.#"],
+    "infection": ["CT.#"],
+    "pneumonia": ["MRI.chest.*", "X-RAYS.chest.*"],
+    "multiple_sclerosis": ["MRI.brain.*", "CT.brain.*"],
+    "syringomyelia": ["MRI.spine.*"],
+    "stroke": ["CT.brain.*"],
+    "tumor": ["CT.#", "MRI.#"],
+    "gallbladder_disease": ["MRI.abdomen.*"],
+    "prostate_problem": ["MRI.pelvis.M"],
+    "synovitis": ["#"]
   }
 }

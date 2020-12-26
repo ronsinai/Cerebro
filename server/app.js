@@ -5,7 +5,6 @@ const Nconf = require('nconf');
 
 const { getLogger } = require('./utils/logger');
 const MQ = require('./utils/mq');
-const Redis = require('./utils/redis');
 const Routes = require('./routes');
 
 const logger = getLogger();
@@ -14,7 +13,6 @@ class App {
   async start() {
     try {
       await this._connectToMQ();
-      await this._connectToRedis();
       this._initApp();
     }
     catch (err) {
@@ -55,8 +53,10 @@ class App {
   // eslint-disable-next-line class-methods-use-this
   async _connectToMQ() {
     await MQ.connect(Nconf.get('AMQP_URI'));
-    const queues = [].concat(...Object.values(Nconf.get('diagnoses')));
+    await MQ.assertExchange(Nconf.get('AMQP_EXCHANGE'), Nconf.get('AMQP_EXCHANGE_TYPE'));
+    const queues = Object.keys(Nconf.get('diagnoses'));
     await MQ.assertQueues(queues);
+    await MQ.bindQueues(Nconf.get('AMQP_EXCHANGE'), Nconf.get('diagnoses'));
     logger.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }
 
@@ -66,23 +66,9 @@ class App {
     logger.info(`Cerebro : disconnected from rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  async _connectToRedis() {
-    Redis.connect(Nconf.get('REDIS_URI'), Nconf.get('REDIS_INDEX'));
-    await Redis.initDB(Nconf.get('diagnoses'));
-    logger.info(`Cerebro : connected to redis at ${Nconf.get('REDIS_URI')}/${Nconf.get('REDIS_INDEX')}`);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  async _closeRedisConnection() {
-    await Redis.close();
-    logger.info(`Cerebro : disconnected from redis at ${Nconf.get('REDIS_URI')}/${Nconf.get('REDIS_INDEX')}`);
-  }
-
   async stop() {
     try {
       this._stopApp();
-      await this._closeRedisConnection();
       await this._closeMQConnection();
     }
     catch (err) {

@@ -1,5 +1,6 @@
 const Chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const Nconf = require('nconf');
 const Sinon = require('sinon');
 const SinonChai = require('sinon-chai');
 
@@ -22,20 +23,12 @@ describe('Imagings Collection', () => {
 
   describe('#diagnose', () => {
     it('should pass imaging insertion to diagnose', async () => {
-      const exampleDiagnoses = await this.imagings.redis.getMembers(this.exampleImaging.type);
-      const spy = Sinon.spy(this.mq, 'sendToQueue');
+      const spy = Sinon.spy(this.mq, 'publish');
+      await this.imagings.diagnose(this.exampleImaging);
 
-      const diagnoses = await this.imagings.diagnose(this.exampleImaging);
-      expect(diagnoses).to.be.an('array');
-      expect(diagnoses).to.eql(exampleDiagnoses);
-
-      expect(spy.callCount).to.equal(exampleDiagnoses.length);
       const bufferedExampleImaging = Buffer.from(JSON.stringify(this.exampleImaging));
-      diagnoses.forEach((diagnosis) => {
-        // eslint-disable-next-line max-len
-        expect(spy).to.have.been.calledWithExactly(diagnosis, bufferedExampleImaging, { persistent: true });
-      });
-
+      const key = this.imagings._getRoutingKey(this.exampleImaging);
+      expect(spy).to.have.been.calledOnceWithExactly(Nconf.get('AMQP_EXCHANGE'), key, bufferedExampleImaging, { persistent: true });
       spy.restore();
     });
 
@@ -43,15 +36,9 @@ describe('Imagings Collection', () => {
       await expect(this.imagings.diagnose(this.badImaging)).to.be.rejectedWith('"type" is required');
     });
 
-    it('should update diagnoses in diagnosis', async () => {
-      const update = 'example_diagnosis';
-      this.imagings.redis.setMembers(this.exampleImaging.type, update);
-
-      const exampleDiagnoses = await this.imagings.redis.getMembers(this.exampleImaging.type);
-      const diagnoses = await this.imagings.diagnose(this.exampleImaging);
-      expect(diagnoses).to.be.an('array');
-      expect(diagnoses).to.eql(exampleDiagnoses);
-      expect(diagnoses).to.contain(update);
+    it('should create correct pattern', () => {
+      const pattern = this.imagings._getRoutingKey(this.exampleImaging);
+      expect(pattern).to.equal('MRI.chest.F');
     });
   });
 });

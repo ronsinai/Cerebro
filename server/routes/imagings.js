@@ -16,9 +16,8 @@ router.post('/:id/diagnoses', validator.body(imagingSchema), async (req, res, ne
   logger.info(`Requested to diagnose imaging ${imagingId}`);
 
   try {
-    const diagnoses = await imagings.diagnose(imaging);
-    res.send(diagnoses);
-    logger.info(`Responded with potential diagnoses of imaging ${imagingId}: ${diagnoses}`);
+    await imagings.diagnose(imaging);
+    res.send();
   }
   catch (err) {
     res.status(400).send(err);
