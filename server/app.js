@@ -54,9 +54,6 @@ class App {
   async _connectToMQ() {
     await MQ.connect(Nconf.get('AMQP_URI'));
     await MQ.assertExchange(Nconf.get('AMQP_EXCHANGE'), Nconf.get('AMQP_EXCHANGE_TYPE'));
-    const queues = Object.keys(Nconf.get('diagnoses'));
-    await MQ.assertQueues(queues);
-    await MQ.bindQueues(Nconf.get('AMQP_EXCHANGE'), Nconf.get('diagnoses'));
     logger.info(`Cerebro : connected to rabbitmq at ${Nconf.get('AMQP_URI')}`);
   }
 
